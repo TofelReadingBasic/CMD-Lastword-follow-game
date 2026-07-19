@@ -13,7 +13,7 @@ import sys
 
 from hangul_utils import is_valid_word_format, can_link, dueum_alternatives
 from dict_check import get_word_info, search_words_starting_with, format_word_line, DictUnavailable
-from ui_utils import Spinner
+from ui_utils import Spinner, clear_screen
 
 # ==========================================
 # [설정 데이터] 게임 환경 및 난이도 정의
@@ -47,9 +47,9 @@ def get_all_valid_candidates(last_word, used, config):
     random.shuffle(starts)
     pool = []
 
-    # ai_max가 0(무제한)일 때 API에 0을 그대로 넘기면 0건 검색이 되므로,
-    # 사전에서 사실상 무제한으로 취급되는 99자 상한값으로 치환한다.
-    max_len = 99 if config["ai_max"] == 0 else config["ai_max"]
+    # ai_max가 0(무제한)일 때 API에 너무 큰 값(예: 99)을 넘기면 "Invalid letter_e value" 오류가 나므로,
+    # 사전에서 사실상 무제한으로 취급되는 안전한 상한값(10음절)으로 치환한다.
+    max_len = 10 if config["ai_max"] == 0 else config["ai_max"]
 
     for s in starts:
         try:
@@ -154,6 +154,11 @@ def main():
 
     first = input("먼저 시작하시겠어요? (y = 내가 먼저 / n = AI가 먼저): ").strip().lower()
     my_turn = not first.startswith("n")
+
+    clear_screen()
+    print("=== 끝말잇기 (혼자서 컴퓨터와 대결) ===")
+    print(f"[설정] {config['name']} 모드 | 먼저 시작: {'나' if my_turn else 'AI'}")
+    print("'/quit' 입력 시 언제든 종료할 수 있습니다.")
 
     used = set()
     last_word = None

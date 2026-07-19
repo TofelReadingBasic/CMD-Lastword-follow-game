@@ -23,6 +23,16 @@ class DictUnavailable(Exception):
     pass
 
 
+def _raise_if_error(root):
+    """API가 <error> 응답을 준 경우 원인 메시지를 담아 예외를 던진다."""
+    if root.tag == "error" or root.find("error_code") is not None:
+        code_el = root.find("error_code")
+        msg_el = root.find("message")
+        code = code_el.text.strip() if code_el is not None and code_el.text else "?"
+        msg = msg_el.text.strip() if msg_el is not None and msg_el.text else "알 수 없는 오류"
+        raise DictUnavailable(f"사전 API 오류({code}): {msg}")
+
+
 def _require_key():
     if not API_KEY:
         raise DictUnavailable(
@@ -77,6 +87,8 @@ def get_word_info(word: str, timeout: float = 5.0) -> dict:
         root = ET.fromstring(resp.content)
     except ET.ParseError as e:
         raise DictUnavailable(f"사전 API 응답 파싱 실패: {e}")
+
+    _raise_if_error(root)
 
     info = {"exists": False, "definition": None, "pos": None}
     for item in root.iter("item"):
@@ -142,6 +154,8 @@ def search_words_starting_with(prefix: str, letter_s: int = 2, letter_e: int = 4
         root = ET.fromstring(resp.content)
     except ET.ParseError as e:
         raise DictUnavailable(f"사전 API 응답 파싱 실패: {e}")
+
+    _raise_if_error(root)
 
     results = []
     seen = set()

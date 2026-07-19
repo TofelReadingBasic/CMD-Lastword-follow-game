@@ -4,9 +4,15 @@
 ANSI 이스케이프 없이 캐리지 리턴(\\r)만 사용하므로 cmd.exe에서도 잘 보인다.
 """
 
+import os
 import sys
 import threading
 import time
+
+
+def clear_screen():
+    """Windows cmd(cls)와 macOS/Linux(clear) 모두에서 화면을 깨끗이 지운다."""
+    os.system("cls" if os.name == "nt" else "clear")
 
 
 class Spinner:
